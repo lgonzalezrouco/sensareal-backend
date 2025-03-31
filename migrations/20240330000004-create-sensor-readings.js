@@ -16,6 +16,16 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
+      sensorId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: 'sensors',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
       temperature: {
         type: Sequelize.FLOAT,
         allowNull: false,
@@ -29,6 +39,14 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.NOW,
       },
+      batteryLevel: {
+        type: Sequelize.FLOAT,
+        allowNull: true,
+      },
+      signalStrength: {
+        type: Sequelize.FLOAT,
+        allowNull: true,
+      },
       createdAt: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -40,7 +58,13 @@ module.exports = {
     });
 
     // Add indexes
-    await queryInterface.addIndex('sensor_readings', ['userId', 'timestamp']);
+    await queryInterface.addIndex('sensor_readings', ['userId', 'timestamp'], {
+      name: 'idx_sensor_readings_user_timestamp',
+    });
+    await queryInterface.addIndex('sensor_readings', ['sensorId', 'timestamp'], {
+      unique: true,
+      name: 'idx_sensor_readings_sensor_timestamp_unique',
+    });
   },
 
   down: async (queryInterface) => {

@@ -1,7 +1,19 @@
-const { DataTypes } = require('sequelize');
+const { Model } = require('sequelize');
 
-module.exports = (sequelize) => {
-  const SensorReading = sequelize.define('SensorReading', {
+module.exports = (sequelize, DataTypes) => {
+  class SensorReading extends Model {
+    static associate(models) {
+      SensorReading.belongsTo(models.User, {
+        foreignKey: 'userId',
+        as: 'user',
+      });
+      SensorReading.belongsTo(models.Sensor, {
+        foreignKey: 'sensorId',
+        as: 'sensor',
+      });
+    }
+  }
+  SensorReading.init({
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -12,6 +24,14 @@ module.exports = (sequelize) => {
       allowNull: false,
       references: {
         model: 'users',
+        key: 'id',
+      },
+    },
+    sensorId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: 'sensors',
         key: 'id',
       },
     },
@@ -35,15 +55,36 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: DataTypes.NOW,
     },
+    batteryLevel: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
+    signalStrength: {
+      type: DataTypes.FLOAT,
+      allowNull: true,
+      validate: {
+        min: 0,
+        max: 100,
+      },
+    },
   }, {
+    sequelize,
+    modelName: 'SensorReading',
     tableName: 'sensor_readings',
     timestamps: true,
     indexes: [
       {
         fields: ['userId', 'timestamp'],
       },
+      {
+        fields: ['sensorId', 'timestamp'],
+        unique: true,
+      },
     ],
   });
-
   return SensorReading;
 };

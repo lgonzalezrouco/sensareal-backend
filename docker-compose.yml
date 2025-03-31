@@ -14,6 +14,22 @@ services:
     command: --character-set-server=utf8mb4
              --collation-server=utf8mb4_unicode_ci
 
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: sensareal-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - mqtt_log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+    command: 'mosquitto -c /mosquitto/config/mosquitto.conf'
+
 volumes:
   mysql_data:
+    driver: local
+  mqtt_data:
+    driver: local
+  mqtt_log:
     driver: local
