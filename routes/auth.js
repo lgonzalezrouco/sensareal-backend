@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const db = require('../models');
+
 const { User } = db;
 const { auth } = require('../src/middleware/auth');
 const logger = require('../config/logger');
@@ -35,16 +36,17 @@ const router = express.Router();
  *               name:
  *                 type: string
  */
-router.post('/register',
+router.post(
+  '/register',
   [
     body('email').isEmail().withMessage('Please enter a valid email'),
     body('password')
       .isLength({ min: 6 })
       .withMessage('Password must be at least 6 characters long'),
     body('name').notEmpty().withMessage('Name is required'),
-    validateRequest
+    validateRequest,
   ],
-  authController.register
+  authController.register,
 );
 
 /**
@@ -70,13 +72,14 @@ router.post('/register',
  *                 type: string
  *                 format: password
  */
-router.post('/login',
+router.post(
+  '/login',
   [
     body('email').isEmail().withMessage('Please enter a valid email'),
     body('password').notEmpty().withMessage('Password is required'),
-    validateRequest
+    validateRequest,
   ],
-  authController.login
+  authController.login,
 );
 
 /**
@@ -91,7 +94,7 @@ router.post('/login',
 router.get('/profile', auth, async (req, res) => {
   try {
     const user = await User.findByPk(req.user.id, {
-      attributes: { exclude: ['password'] }
+      attributes: { exclude: ['password'] },
     });
     res.json(user);
   } catch (error) {
@@ -193,12 +196,13 @@ router.post('/verify-email', authController.verifyEmail);
  *                   type: string
  *                   example: User not found
  */
-router.post('/resend-verification',
+router.post(
+  '/resend-verification',
   [
     body('email').isEmail().withMessage('Please enter a valid email'),
-    validateRequest
+    validateRequest,
   ],
-  authController.resendVerificationEmail
+  authController.resendVerificationEmail,
 );
 
-module.exports = router; 
+module.exports = router;

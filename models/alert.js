@@ -5,51 +5,51 @@ module.exports = (sequelize) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
-        key: 'id'
-      }
+        key: 'id',
+      },
     },
     type: {
       type: DataTypes.ENUM('temperature', 'humidity'),
-      allowNull: false
+      allowNull: false,
     },
     threshold: {
       type: DataTypes.FLOAT,
-      allowNull: false
+      allowNull: false,
     },
     condition: {
       type: DataTypes.ENUM('above', 'below'),
-      allowNull: false
+      allowNull: false,
     },
     email: {
       type: DataTypes.STRING,
       allowNull: false,
       validate: {
-        isEmail: true
-      }
+        isEmail: true,
+      },
     },
     isActive: {
       type: DataTypes.BOOLEAN,
-      defaultValue: true
+      defaultValue: true,
     },
     lastTriggered: {
-      type: DataTypes.DATE
-    }
+      type: DataTypes.DATE,
+    },
   }, {
     tableName: 'alerts',
     timestamps: true,
     indexes: [
       {
-        fields: ['userId', 'type']
-      }
-    ]
+        fields: ['userId', 'type'],
+      },
+    ],
   });
 
   return Alert;
-}; 
+};

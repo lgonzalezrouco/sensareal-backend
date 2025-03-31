@@ -1,19 +1,21 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../models');
+
 const { User } = db;
 const logger = require('../../config/logger');
 
+// eslint-disable-next-line consistent-return
 const auth = async (req, res, next) => {
   try {
     const token = req.header('Authorization')?.replace('Bearer ', '');
-    
+
     if (!token) {
       logger.error('No token provided in request');
       return res.status(401).json({ message: 'Authentication required' });
     }
-    
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    
+
     const user = await User.findByPk(decoded.id);
 
     if (!user) {
@@ -28,12 +30,13 @@ const auth = async (req, res, next) => {
     logger.error('Authentication error:', {
       message: error.message,
       name: error.name,
-      stack: error.stack
+      stack: error.stack,
     });
     res.status(401).json({ message: 'Please authenticate' });
   }
 };
 
+// eslint-disable-next-line consistent-return
 const isAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied. Admin only.' });
@@ -41,4 +44,4 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-module.exports = { auth, isAdmin }; 
+module.exports = { auth, isAdmin };

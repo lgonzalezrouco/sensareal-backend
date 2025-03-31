@@ -9,7 +9,7 @@ const config = {
     database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: 'mysql'
+    dialect: 'mysql',
   },
   test: {
     username: process.env.DB_USER,
@@ -17,7 +17,7 @@ const config = {
     database: `${process.env.DB_NAME}_test`,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: 'mysql'
+    dialect: 'mysql',
   },
   production: {
     username: process.env.DB_USER,
@@ -25,14 +25,12 @@ const config = {
     database: `${process.env.DB_NAME}_prod`,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
-    dialect: 'mysql'
-  }
+    dialect: 'mysql',
+  },
 };
 
 // Write the config file
 fs.writeFileSync(
   path.join(__dirname, 'config.json'),
-  JSON.stringify(config, null, 2)
+  JSON.stringify(config, null, 2),
 );
-
-console.log('config.json has been generated from environment variables'); 

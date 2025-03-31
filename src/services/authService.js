@@ -1,14 +1,15 @@
-const db = require('../../models');
-const { User, Token } = db;
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const EmailService = require('../utils/emailService');
 const { Op } = require('sequelize');
+const db = require('../../models');
+
+const { User, Token } = db;
+const EmailService = require('../utils/emailService');
 
 class AuthService {
   static generateToken(userId) {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-      expiresIn: '24h'
+      expiresIn: '24h',
     });
   }
 
@@ -20,7 +21,7 @@ class AuthService {
       userId,
       type: 'email_verification',
       token,
-      expiresAt
+      expiresAt,
     });
 
     return token;
@@ -35,7 +36,7 @@ class AuthService {
     const user = await User.create({
       email: email.toLowerCase(),
       password,
-      name
+      name,
     });
 
     const verificationToken = await this.generateVerificationToken(user.id);
@@ -67,8 +68,8 @@ class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
-        role: user.role
-      }
+        role: user.role,
+      },
     };
   }
 
@@ -79,9 +80,9 @@ class AuthService {
         type: 'email_verification',
         used: false,
         expiresAt: {
-          [Op.gt]: new Date()
-        }
-      }
+          [Op.gt]: new Date(),
+        },
+      },
     });
 
     if (!verificationToken) {
@@ -91,9 +92,9 @@ class AuthService {
     await Promise.all([
       User.update(
         { isEmailVerified: true },
-        { where: { id: verificationToken.userId } }
+        { where: { id: verificationToken.userId } },
       ),
-      verificationToken.update({ used: true })
+      verificationToken.update({ used: true }),
     ]);
 
     return { message: 'Email verified successfully' };
@@ -116,4 +117,4 @@ class AuthService {
   }
 }
 
-module.exports = AuthService; 
+module.exports = AuthService;

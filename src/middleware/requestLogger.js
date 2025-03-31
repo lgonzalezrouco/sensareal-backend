@@ -5,7 +5,8 @@ const requestLogger = (req, res, next) => {
 
   // Log the response when it's sent
   const originalSend = res.send;
-  res.send = function(data) {
+  // eslint-disable-next-line func-names
+  res.send = function (...args) {
     const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
     const responseTime = Date.now() - startTime;
     if (res.statusCode >= 200 && res.statusCode < 400) {
@@ -15,10 +16,10 @@ const requestLogger = (req, res, next) => {
     } else {
       logger.error(`${req.method} ${url} ${res.statusCode} ${responseTime}ms`);
     }
-    originalSend.apply(res, arguments);
+    originalSend.apply(res, args);
   };
 
   next();
 };
 
-module.exports = requestLogger; 
+module.exports = requestLogger;

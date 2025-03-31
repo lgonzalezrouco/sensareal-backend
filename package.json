@@ -11,7 +11,9 @@
     "migrate:undo": "node config/generate-config.js && sequelize-cli db:migrate:undo",
     "migrate:undo:all": "sequelize-cli db:migrate:undo:all",
     "db:seed": "node config/generate-config.js && sequelize-cli db:seed:all",
-    "db:seed:undo": "node config/generate-config.js && sequelize-cli db:seed:undo:all"
+    "db:seed:undo": "node config/generate-config.js && sequelize-cli db:seed:undo:all",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
@@ -38,6 +40,10 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.31.0",
+    "eslint-plugin-jest": "^28.11.0",
     "jest": "^29.7.0",
     "nodemon": "^3.1.9",
     "sequelize-cli": "^6.6.2",

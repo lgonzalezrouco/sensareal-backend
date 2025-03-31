@@ -4,7 +4,7 @@ const logger = require('../../config/logger');
 class EmailService {
   static async sendVerificationEmail(email, verificationToken) {
     const verificationUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-    
+
     const mailOptions = {
       from: `<${process.env.SMTP_FROM}>`,
       to: email,
@@ -15,7 +15,7 @@ class EmailService {
         <a href="${verificationUrl}">${verificationUrl}</a>
         <p>This link will expire in 24 hours.</p>
         <p>If you didn't create an account, you can safely ignore this email.</p>
-      `
+      `,
     };
 
     try {
@@ -30,7 +30,7 @@ class EmailService {
 
   static async sendPasswordResetEmail(email, resetToken) {
     const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-    
+
     const mailOptions = {
       from: `<${process.env.SMTP_FROM}>`,
       to: email,
@@ -41,7 +41,7 @@ class EmailService {
         <a href="${resetUrl}">${resetUrl}</a>
         <p>This link will expire in 1 hour.</p>
         <p>If you didn't request this, you can safely ignore this email.</p>
-      `
+      `,
     };
 
     try {
@@ -55,4 +55,4 @@ class EmailService {
   }
 }
 
-module.exports = EmailService; 
+module.exports = EmailService;
