@@ -1,20 +1,45 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+require('dotenv').config();
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const swaggerUi = require('swagger-ui-express');
+const { testConnection } = require('./config/database');
+const specs = require('./config/swagger');
+const errorHandler = require('./src/middleware/errorHandler');
+const requestLogger = require('./src/middleware/requestLogger');
+const db = require('./models');
 
-var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+const app = express();
 
-var app = express();
-
-app.use(logger('dev'));
+// Middleware
+app.use(helmet());
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(requestLogger);
 
-app.use('/', indexRouter);
-app.use('/users', usersRouter);
+// Swagger Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Initialize database and models
+const initializeApp = async () => {
+  try {
+    await testConnection();
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
+  }
+};
+
+// Routes
+app.use('/api/auth', require('./routes/auth'));
+app.use('/api/sensor-data', require('./routes/sensorData'));
+app.use('/api/alerts', require('./routes/alerts'));
+
+// Error handling
+app.use(errorHandler);
+
+// Initialize the application
+initializeApp();
 
 module.exports = app;
