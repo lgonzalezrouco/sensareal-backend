@@ -1,14 +1,46 @@
 {
   "name": "sensareal-backend",
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Backend for SensaReal IoT Sensor Monitoring System",
   "private": true,
   "scripts": {
-    "start": "node ./bin/www"
+    "start": "node ./bin/www",
+    "dev": "nodemon ./bin/www",
+    "test": "jest",
+    "migrate": "node config/generate-config.js && sequelize-cli db:migrate",
+    "migrate:undo": "node config/generate-config.js && sequelize-cli db:migrate:undo",
+    "migrate:undo:all": "sequelize-cli db:migrate:undo:all",
+    "db:seed": "node config/generate-config.js && sequelize-cli db:seed:all",
+    "db:seed:undo": "node config/generate-config.js && sequelize-cli db:seed:undo:all"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.2",
     "cookie-parser": "~1.4.4",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
     "debug": "~2.6.9",
+    "dotenv": "^16.4.7",
     "express": "~4.16.1",
-    "morgan": "~1.9.1"
+    "express-mongo-sanitize": "^2.2.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "joi": "^17.13.3",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "~1.9.1",
+    "mysql2": "^3.14.0",
+    "nodemailer": "^6.10.0",
+    "pino": "^9.6.0",
+    "pino-pretty": "^13.0.0",
+    "pino-roll": "^3.1.0",
+    "sequelize": "^6.37.7",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.9",
+    "sequelize-cli": "^6.6.2",
+    "supertest": "^7.1.0"
   }
 }
