@@ -52,6 +52,5 @@ module.exports = {
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('tokens');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS enum_tokens_type;');
   }
 }; 
