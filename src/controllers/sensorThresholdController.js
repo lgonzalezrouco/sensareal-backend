@@ -19,12 +19,11 @@ const sensorThresholdController = {
     try {
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 50;
-      const offset = (page - 1) * limit;
 
       const { count, rows: thresholds } = await sensorThresholdService.getThresholds(
         req.user.id,
+        page,
         limit,
-        offset,
       );
 
       const totalPages = Math.ceil(count / limit);
@@ -53,7 +52,7 @@ const sensorThresholdController = {
 
   deleteThreshold: async (req, res) => {
     try {
-      await sensorThresholdService.deleteThreshold(req.params.id, req.user.id);
+      await sensorThresholdService.deleteThreshold(req.user.id, req.params.id);
       return res.json({ message: 'Threshold deleted successfully' });
     } catch (error) {
       if (error.message === 'Threshold not found') {
@@ -67,8 +66,8 @@ const sensorThresholdController = {
   toggleThreshold: async (req, res) => {
     try {
       const threshold = await sensorThresholdService.toggleThreshold(
-        req.params.id,
         req.user.id,
+        req.params.id,
       );
       return res.json(threshold);
     } catch (error) {
