@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { auth, isAdmin } = require('../src/middleware/auth');
-const SensorReading = require('../models/sensorReading');
+const { SensorReading } = require('../models');
 const logger = require('../config/logger');
 
 const router = express.Router();
@@ -59,8 +59,8 @@ router.post('/',
       res.status(201).json(reading);
     } catch (error) {
       logger.error('Sensor reading creation error:', error);
-      res.status(500).json({ message: 'Error creating sensor reading' });
-    }
+      res.status(500).json({ message: 'Error creating sensor reading', error: error.message, stack: error.stack });
+    }    
   }
 );
 
