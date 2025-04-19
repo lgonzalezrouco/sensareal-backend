@@ -35,6 +35,7 @@ const initializeApp = async () => {
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/esp', require('./routes/esp32'));
 app.use('/api/sensor-data', require('./routes/sensorData'));
+app.use('/api/sensor-thresholds', require('./routes/sensorThresholds'));
 app.use('/api/alerts', require('./routes/alerts'));
 
 // Error handling

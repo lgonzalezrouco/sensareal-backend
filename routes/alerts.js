@@ -1,173 +1,167 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { auth } = require('../src/middleware/auth');
-const Alert = require('../models/alert');
-const logger = require('../config/logger');
 
 const router = express.Router();
+const { auth } = require('../src/middleware/auth');
+const AlertController = require('../src/controllers/alertController');
 
 /**
  * @swagger
- * /api/alerts/configure:
- *   post:
- *     summary: Configure new alert threshold
- *     tags: [Alerts]
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - type
- *               - threshold
- *               - condition
- *               - email
- *             properties:
- *               type:
- *                 type: string
- *                 enum: [temperature, humidity]
- *               threshold:
- *                 type: number
- *                 format: float
- *               condition:
- *                 type: string
- *                 enum: [above, below]
- *               email:
- *                 type: string
- *                 format: email
+ * components:
+ *   schemas:
+ *     EmailAlert:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *           description: Unique identifier for the alert
+ *         userId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the user who received the alert
+ *         sensorId:
+ *           type: string
+ *           format: uuid
+ *           description: ID of the sensor that triggered the alert
+ *         thresholdValue:
+ *           type: number
+ *           format: float
+ *           description: The threshold value that was set
+ *         actualValue:
+ *           type: number
+ *           format: float
+ *           description: The actual value that triggered the alert
+ *         condition:
+ *           type: string
+ *           enum: [above, below]
+ *           description: The condition that triggered the alert
+ *         sentAt:
+ *           type: string
+ *           format: date-time
+ *           description: When the alert was sent
+ *         sensor:
+ *           $ref: '#/components/schemas/Sensor'
+ *         user:
+ *           $ref: '#/components/schemas/User'
+ *     Sensor:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         sensorId:
+ *           type: string
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           format: uuid
+ *         name:
+ *           type: string
+ *         email:
+ *           type: string
+ *           format: email
  */
-router.post(
-  '/configure',
-  auth,
-  [
-    body('type').isIn(['temperature', 'humidity']),
-    body('threshold').isFloat(),
-    body('condition').isIn(['above', 'below']),
-    body('email').isEmail().normalizeEmail(),
-  ],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const {
-        type, threshold, condition, email,
-      } = req.body;
-      const alert = await Alert.create({
-        type,
-        threshold,
-        condition,
-        email,
-        userId: req.user.id,
-      });
-
-      return res.status(201).json(alert);
-    } catch (error) {
-      logger.error('Alert configuration error:', error);
-      return res.status(500).json({ message: 'Error configuring alert' });
-    }
-  },
-);
 
 /**
  * @swagger
  * /api/alerts:
  *   get:
- *     summary: Get user's configured alerts
+ *     summary: Get all alerts for the authenticated user
  *     tags: [Alerts]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of alerts
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 next:
+ *                   type: string
+ *                   nullable: true
+ *                 previous:
+ *                   type: string
+ *                   nullable: true
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/EmailAlert'
+ *       500:
+ *         description: Server error
  */
-router.get('/', auth, async (req, res) => {
-  try {
-    const alerts = await Alert.findAll({
-      where: { userId: req.user.id },
-    });
-    return res.json({ alerts });
-  } catch (error) {
-    logger.error('Alerts fetch error:', error);
-    return res.status(500).json({ message: 'Error fetching alerts' });
-  }
-});
+router.get('/', auth, AlertController.getAlerts);
 
 /**
  * @swagger
- * /api/alerts/{id}:
- *   delete:
- *     summary: Delete an alert
+ * /api/sensors/{sensorId}/alerts:
+ *   get:
+ *     summary: Get all alerts for a specific sensor
  *     tags: [Alerts]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: sensorId
  *         required: true
  *         schema:
  *           type: string
- *           format: uuid
- */
-router.delete('/:id', auth, async (req, res) => {
-  try {
-    const alert = await Alert.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id,
-      },
-    });
-
-    if (!alert) {
-      return res.status(404).json({ message: 'Alert not found' });
-    }
-
-    await alert.destroy();
-    return res.json({ message: 'Alert deleted successfully' });
-  } catch (error) {
-    logger.error('Alert deletion error:', error);
-    return res.status(500).json({ message: 'Error deleting alert' });
-  }
-});
-
-/**
- * @swagger
- * /api/alerts/{id}/toggle:
- *   patch:
- *     summary: Toggle alert active status
- *     tags: [Alerts]
- *     security:
- *       - bearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
+ *         description: Sensor ID
+ *       - in: query
+ *         name: page
  *         schema:
- *           type: string
- *           format: uuid
+ *           type: integer
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: List of alerts for the sensor
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 count:
+ *                   type: integer
+ *                 next:
+ *                   type: string
+ *                   nullable: true
+ *                 previous:
+ *                   type: string
+ *                   nullable: true
+ *                 results:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/EmailAlert'
+ *       500:
+ *         description: Server error
  */
-router.patch('/:id/toggle', auth, async (req, res) => {
-  try {
-    const alert = await Alert.findOne({
-      where: {
-        id: req.params.id,
-        userId: req.user.id,
-      },
-    });
-
-    if (!alert) {
-      return res.status(404).json({ message: 'Alert not found' });
-    }
-
-    alert.isActive = !alert.isActive;
-    await alert.save();
-    return res.json(alert);
-  } catch (error) {
-    logger.error('Alert toggle error:', error);
-    return res.status(500).json({ message: 'Error toggling alert' });
-  }
-});
+router.get('/sensors/:sensorId/alerts', auth, AlertController.getSensorAlerts);
 
 module.exports = router;
