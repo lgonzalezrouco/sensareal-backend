@@ -2,7 +2,7 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { Op } = require('sequelize');
 const { auth, isAdmin } = require('../src/middleware/auth');
-const SensorReading = require('../models/sensorReading');
+const { SensorReading } = require('../models');
 const logger = require('../config/logger');
 const User = require('../models/user');
 
@@ -62,7 +62,7 @@ router.post(
       return res.status(201).json(reading);
     } catch (error) {
       logger.error('Sensor reading creation error:', error);
-      return res.status(500).json({ message: 'Error creating sensor reading' });
+      return res.status(500).json({ message: 'Error creating sensor reading', error: error.message, stack: error.stack });
     }
   },
 );
