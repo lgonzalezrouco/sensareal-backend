@@ -2,6 +2,7 @@ const mqtt = require('mqtt');
 const logger = require('../../config/logger');
 const SensorReading = require('../../models/sensorReading');
 const Esp32Device = require('../../models/esp32device');
+const EmailAlertService = require('../utils/emailAlertService');
 
 class MqttService {
   constructor() {
@@ -99,8 +100,9 @@ class MqttService {
         return;
       }
 
+      const sensorRecord = sensor[0];
       await SensorReading.create({
-        sensorId: sensor[0].id,
+        sensorId: sensorRecord.id,
         userId: device.userId,
         temperature: data.temperature,
         humidity: data.humidity,
@@ -108,6 +110,14 @@ class MqttService {
         signalStrength: data.signalStrength,
         timestamp: new Date(),
       });
+
+      // Check thresholds for temperature and humidity
+      if (data.temperature !== undefined) {
+        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.temperature);
+      }
+      if (data.humidity !== undefined) {
+        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.humidity);
+      }
 
       logger.info(`Processed sensor reading for ${sensorId}`);
     } catch (error) {
