@@ -26,11 +26,11 @@ const logger = pino({
           // Keep logs for 30 days
           maxFiles: 30,
           // Format for rotated files: app-YYYY-MM-DD.log.gz
-          format: 'app-%Y-%m-%d.log.gz'
+          format: 'app-%Y-%m-%d.log.gz',
         },
-      }
-    ]
-  }
+      },
+    ],
+  },
 });
 
-module.exports = logger; 
+module.exports = logger;

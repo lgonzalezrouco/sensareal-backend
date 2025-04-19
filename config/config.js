@@ -1,8 +1,8 @@
-const fs = require('fs');
-const path = require('path');
-require('dotenv').config();
+const dotenv = require('dotenv');
 
-const config = {
+dotenv.config();
+
+module.exports = {
   development: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -10,27 +10,24 @@ const config = {
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
+    logging: false,
   },
   test: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: `${process.env.DB_NAME}_test`,
+    database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
+    logging: false,
   },
   production: {
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
-    database: `${process.env.DB_NAME}_prod`,
+    database: process.env.DB_NAME,
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
     dialect: 'mysql',
+    logging: false,
   },
 };
-
-// Write the config file
-fs.writeFileSync(
-  path.join(__dirname, 'config.json'),
-  JSON.stringify(config, null, 2),
-);

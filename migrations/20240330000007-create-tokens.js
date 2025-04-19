@@ -1,47 +1,45 @@
-'use strict';
-
 module.exports = {
   up: async (queryInterface, Sequelize) => {
     await queryInterface.createTable('tokens', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
-        primaryKey: true
+        primaryKey: true,
       },
       userId: {
         type: Sequelize.UUID,
         allowNull: false,
         references: {
           model: 'users',
-          key: 'id'
+          key: 'id',
         },
         onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
+        onDelete: 'CASCADE',
       },
       type: {
         type: Sequelize.ENUM('email_verification', 'password_reset'),
-        allowNull: false
+        allowNull: false,
       },
       token: {
         type: Sequelize.STRING,
-        allowNull: false
+        allowNull: false,
       },
       expiresAt: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
       },
       used: {
         type: Sequelize.BOOLEAN,
-        defaultValue: false
+        defaultValue: false,
       },
       createdAt: {
         type: Sequelize.DATE,
-        allowNull: false
+        allowNull: false,
       },
       updatedAt: {
         type: Sequelize.DATE,
-        allowNull: false
-      }
+        allowNull: false,
+      },
     });
 
     // Add indexes
@@ -50,7 +48,7 @@ module.exports = {
     await queryInterface.addIndex('tokens', ['type']);
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('tokens');
-  }
-}; 
+  },
+};

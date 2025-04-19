@@ -39,13 +39,14 @@ const router = express.Router();
  *                 type: string
  *                 format: email
  */
-router.post('/configure',
+router.post(
+  '/configure',
   auth,
   [
     body('type').isIn(['temperature', 'humidity']),
     body('threshold').isFloat(),
     body('condition').isIn(['above', 'below']),
-    body('email').isEmail().normalizeEmail()
+    body('email').isEmail().normalizeEmail(),
   ],
   async (req, res) => {
     try {
@@ -54,21 +55,23 @@ router.post('/configure',
         return res.status(400).json({ errors: errors.array() });
       }
 
-      const { type, threshold, condition, email } = req.body;
+      const {
+        type, threshold, condition, email,
+      } = req.body;
       const alert = await Alert.create({
         type,
         threshold,
         condition,
         email,
-        userId: req.user.id
+        userId: req.user.id,
       });
 
-      res.status(201).json(alert);
+      return res.status(201).json(alert);
     } catch (error) {
       logger.error('Alert configuration error:', error);
-      res.status(500).json({ message: 'Error configuring alert' });
+      return res.status(500).json({ message: 'Error configuring alert' });
     }
-  }
+  },
 );
 
 /**
@@ -83,12 +86,12 @@ router.post('/configure',
 router.get('/', auth, async (req, res) => {
   try {
     const alerts = await Alert.findAll({
-      where: { userId: req.user.id }
+      where: { userId: req.user.id },
     });
-    res.json({ alerts });
+    return res.json({ alerts });
   } catch (error) {
     logger.error('Alerts fetch error:', error);
-    res.status(500).json({ message: 'Error fetching alerts' });
+    return res.status(500).json({ message: 'Error fetching alerts' });
   }
 });
 
@@ -113,8 +116,8 @@ router.delete('/:id', auth, async (req, res) => {
     const alert = await Alert.findOne({
       where: {
         id: req.params.id,
-        userId: req.user.id
-      }
+        userId: req.user.id,
+      },
     });
 
     if (!alert) {
@@ -122,10 +125,10 @@ router.delete('/:id', auth, async (req, res) => {
     }
 
     await alert.destroy();
-    res.json({ message: 'Alert deleted successfully' });
+    return res.json({ message: 'Alert deleted successfully' });
   } catch (error) {
     logger.error('Alert deletion error:', error);
-    res.status(500).json({ message: 'Error deleting alert' });
+    return res.status(500).json({ message: 'Error deleting alert' });
   }
 });
 
@@ -150,8 +153,8 @@ router.patch('/:id/toggle', auth, async (req, res) => {
     const alert = await Alert.findOne({
       where: {
         id: req.params.id,
-        userId: req.user.id
-      }
+        userId: req.user.id,
+      },
     });
 
     if (!alert) {
@@ -160,11 +163,11 @@ router.patch('/:id/toggle', auth, async (req, res) => {
 
     alert.isActive = !alert.isActive;
     await alert.save();
-    res.json(alert);
+    return res.json(alert);
   } catch (error) {
     logger.error('Alert toggle error:', error);
-    res.status(500).json({ message: 'Error toggling alert' });
+    return res.status(500).json({ message: 'Error toggling alert' });
   }
 });
 
-module.exports = router; 
+module.exports = router;

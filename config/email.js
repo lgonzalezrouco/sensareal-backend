@@ -8,12 +8,12 @@ const transporter = nodemailer.createTransport({
   secure: process.env.SMTP_SECURE === 'true',
   auth: {
     user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
+    pass: process.env.SMTP_PASS,
+  },
 });
 
 // Verify transporter configuration
-transporter.verify((error, success) => {
+transporter.verify((error) => {
   if (error) {
     logger.error('SMTP connection error:', error);
   } else {
@@ -21,4 +21,4 @@ transporter.verify((error, success) => {
   }
 });
 
-module.exports = transporter; 
+module.exports = transporter;

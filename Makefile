@@ -38,6 +38,8 @@ setup-dev: ## Setup development environment
 # Development targets
 .PHONY: dev
 dev: ## Start development server
+	@echo "$(GREEN)Starting database...$(NC)"
+	@$(DOCKER_COMPOSE) up -d
 	@echo "$(GREEN)Starting development server...$(NC)"
 	@$(NPM) run dev
 

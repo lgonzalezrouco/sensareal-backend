@@ -5,43 +5,43 @@ module.exports = (sequelize) => {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey: true
+      primaryKey: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
         model: 'users',
-        key: 'id'
-      }
+        key: 'id',
+      },
     },
     type: {
       type: DataTypes.ENUM('email_verification', 'password_reset'),
-      allowNull: false
+      allowNull: false,
     },
     token: {
       type: DataTypes.STRING,
-      allowNull: false
+      allowNull: false,
     },
     expiresAt: {
       type: DataTypes.DATE,
-      allowNull: false
+      allowNull: false,
     },
     used: {
       type: DataTypes.BOOLEAN,
-      defaultValue: false
-    }
+      defaultValue: false,
+    },
   }, {
     tableName: 'tokens',
-    timestamps: true
+    timestamps: true,
   });
 
   Token.associate = (models) => {
     Token.belongsTo(models.User, {
       foreignKey: 'userId',
-      as: 'user'
+      as: 'user',
     });
   };
 
   return Token;
-}; 
+};

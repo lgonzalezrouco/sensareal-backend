@@ -7,7 +7,7 @@ const { testConnection } = require('./config/database');
 const specs = require('./config/swagger');
 const errorHandler = require('./src/middleware/errorHandler');
 const requestLogger = require('./src/middleware/requestLogger');
-const db = require('./models');
+const _mqttService = require('./src/services/mqttService');
 
 const app = express();
 
@@ -33,6 +33,7 @@ const initializeApp = async () => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
+app.use('/api/esp', require('./routes/esp32'));
 app.use('/api/sensor-data', require('./routes/sensorData'));
 app.use('/api/alerts', require('./routes/alerts'));
 
