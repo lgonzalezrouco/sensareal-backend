@@ -1,77 +1,94 @@
 const express = require('express');
-const { body, validationResult } = require('express-validator');
-const { Op } = require('sequelize');
-const { auth, isAdmin } = require('../src/middleware/auth');
-const { SensorReading } = require('../models');
-const logger = require('../config/logger');
-const User = require('../models/user');
+const { auth } = require('../src/middleware/auth');
+const sensorDataController = require('../src/controllers/sensorDataController');
 
 const router = express.Router();
 
 /**
  * @swagger
- * /api/sensor-data:
- *   post:
- *     summary: Submit new sensor reading
+ * /api/sensor-data/sensor/{sensorId}:
+ *   get:
+ *     summary: Get readings from a specific sensor
  *     tags: [Sensor Data]
  *     security:
  *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - temperature
- *               - humidity
- *             properties:
- *               temperature:
- *                 type: number
- *                 format: float
- *               humidity:
- *                 type: number
- *                 format: float
- *               timestamp:
- *                 type: string
- *                 format: date-time
+ *     parameters:
+ *       - in: path
+ *         name: sensorId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved sensor readings
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "count": 100,
+ *                 "next": "/api/sensor-data/sensor/sensor_123?page=2&limit=50",
+ *                 "previous": null,
+ *                 "results": [
+ *                   {
+ *                     "id": 1,
+ *                     "sensorId": "sensor_123",
+ *                     "temperature": 25.5,
+ *                     "humidity": 60.2,
+ *                     "timestamp": "2024-03-30T15:30:00Z"
+ *                   },
+ *                   {
+ *                     "id": 2,
+ *                     "sensorId": "sensor_123",
+ *                     "temperature": 26.1,
+ *                     "humidity": 59.8,
+ *                     "timestamp": "2024-03-30T15:35:00Z"
+ *                   }
+ *                 ]
+ *               }
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication token
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "message": "Unauthorized - Invalid or missing authentication token"
+ *               }
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "message": "Error retrieving sensor readings"
+ *               }
  */
-router.post(
-  '/',
-  auth,
-  [
-    body('temperature').isFloat(),
-    body('humidity').isFloat(),
-    body('timestamp').optional().isISO8601(),
-  ],
-  async (req, res) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const { temperature, humidity, timestamp } = req.body;
-      const reading = await SensorReading.create({
-        temperature,
-        humidity,
-        timestamp: timestamp || new Date(),
-        userId: req.user.id,
-      });
-
-      return res.status(201).json(reading);
-    } catch (error) {
-      logger.error('Sensor reading creation error:', error);
-      return res.status(500).json({ message: 'Error creating sensor reading', error: error.message, stack: error.stack });
-    }
-  },
-);
+router.get('/sensor/:sensorId', auth, sensorDataController.getSensorReadings);
 
 /**
  * @swagger
- * /api/sensor-data/history:
+ * /api/sensor-data/all:
  *   get:
- *     summary: Get historical sensor readings
+ *     summary: Get all sensor readings
  *     tags: [Sensor Data]
  *     security:
  *       - bearerAuth: []
@@ -87,69 +104,59 @@ router.post(
  *           type: string
  *           format: date-time
  *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           default: 100
- *       - in: query
- *         name: offset
- *         schema:
- *           type: integer
- *           default: 0
+ *           default: 50
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved all sensor readings
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "count": 100,
+ *                 "next": "/api/sensor-data/all?page=2&limit=50",
+ *                 "previous": null,
+ *                 "results": [
+ *                   {
+ *                     "id": 1,
+ *                     "sensorId": "sensor_123",
+ *                     "temperature": 25.5,
+ *                     "humidity": 60.2,
+ *                     "timestamp": "2024-03-30T15:30:00Z"
+ *                   },
+ *                   {
+ *                     "id": 2,
+ *                     "sensorId": "sensor_456",
+ *                     "temperature": 26.1,
+ *                     "humidity": 59.8,
+ *                     "timestamp": "2024-03-30T15:35:00Z"
+ *                   }
+ *                 ]
+ *               }
+ *       401:
+ *         description: Unauthorized - Invalid or missing authentication token
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "message": "Unauthorized - Invalid or missing authentication token"
+ *               }
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example: |
+ *               {
+ *                 "message": "Error retrieving all readings"
+ *               }
  */
-router.get('/history', auth, async (req, res) => {
-  try {
-    const {
-      startDate, endDate, limit = 100, offset = 0,
-    } = req.query;
-    const where = { userId: req.user.id };
-
-    if (startDate) where.timestamp = { ...where.timestamp, [Op.gte]: new Date(startDate) };
-    if (endDate) where.timestamp = { ...where.timestamp, [Op.lte]: new Date(endDate) };
-
-    const { count, rows } = await SensorReading.findAndCountAll({
-      where,
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
-      order: [['timestamp', 'DESC']],
-    });
-
-    return res.json({
-      readings: rows,
-      total: count,
-      limit: parseInt(limit, 10),
-      offset: parseInt(offset, 10),
-    });
-  } catch (error) {
-    logger.error('Sensor history fetch error:', error);
-    return res.status(500).json({ message: 'Error fetching sensor history' });
-  }
-});
-
-/**
- * @swagger
- * /api/sensor-data/all:
- *   get:
- *     summary: Get all sensor readings (admin only)
- *     tags: [Sensor Data]
- *     security:
- *       - bearerAuth: []
- */
-router.get('/all', auth, isAdmin, async (req, res) => {
-  try {
-    const readings = await SensorReading.findAll({
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'email', 'name'],
-      }],
-      order: [['timestamp', 'DESC']],
-    });
-    res.json(readings);
-  } catch (error) {
-    logger.error('Admin sensor data fetch error:', error);
-    res.status(500).json({ message: 'Error fetching all sensor data' });
-  }
-});
+router.get('/all', auth, sensorDataController.getAllReadings);
 
 module.exports = router;
