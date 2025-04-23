@@ -48,78 +48,12 @@ channels:
         description: The ID of the sensor
         location: '$message.payload#/sensorId'
 
-  deviceStatus:
-    address: 'esp/{espId}/status'
-    messages:
-      statusMessage:
-        name: DeviceStatus
-        payload:
-          type: object
-          properties:
-            status:
-              type: string
-              enum: [online, offline]
-              description: Current device status
-            batteryLevel:
-              type: number
-              minimum: 0
-              maximum: 100
-              description: Battery level percentage
-            signalStrength:
-              type: number
-              description: Signal strength in dBm
-            sentAt:
-              type: string
-              format: date-time
-              description: Date and time when the message was sent.
-    parameters:
-      espId:
-        description: The ID of the ESP32 device
-        location: '$message.payload#/espId'
-
-  deviceHeartbeat:
-    address: 'esp/{espId}/heartbeat'
-    messages:
-      heartbeatMessage:
-        name: DeviceHeartbeat
-        payload:
-          type: object
-          properties:
-            batteryLevel:
-              type: number
-              minimum: 0
-              maximum: 100
-              description: Battery level percentage
-            signalStrength:
-              type: number
-              description: Signal strength in dBm
-            sentAt:
-              type: string
-              format: date-time
-              description: Date and time when the message was sent.
-    parameters:
-      espId:
-        description: The ID of the ESP32 device
-        location: '$message.payload#/espId'
-
 operations:
   onSensorReading:
     action: 'receive'
     summary: Receive sensor readings from ESP32 devices
     channel:
       $ref: '#/channels/sensorReading'
-
-  onDeviceStatus:
-    action: 'receive'
-    summary: Receive device status updates
-    channel:
-      $ref: '#/channels/deviceStatus'
-
-  onDeviceHeartbeat:
-    action: 'receive'
-    summary: Receive device heartbeats
-    channel:
-      $ref: '#/channels/deviceHeartbeat'
 
 components:
   messages:
@@ -130,20 +64,6 @@ components:
       contentType: application/json
       payload:
         $ref: '#/components/schemas/sensorReadingPayload'
-    statusUpdate:
-      name: statusUpdate
-      title: Device Status Update
-      summary: Update about device status and metrics
-      contentType: application/json
-      payload:
-        $ref: '#/components/schemas/statusUpdatePayload'
-    heartbeat:
-      name: heartbeat
-      title: Device Heartbeat
-      summary: Periodic heartbeat from device
-      contentType: application/json
-      payload:
-        $ref: '#/components/schemas/heartbeatPayload'
   schemas:
     sensorReadingPayload:
       type: object
@@ -171,47 +91,6 @@ components:
           type: string
           format: date-time
           description: Time when the reading was taken
-    statusUpdatePayload:
-      type: object
-      required:
-        - status
-        - batteryLevel
-        - signalStrength
-      properties:
-        status:
-          type: string
-          enum: [online, offline]
-          description: Current device status
-        batteryLevel:
-          type: number
-          minimum: 0
-          maximum: 100
-          description: Battery level percentage
-        signalStrength:
-          type: number
-          description: Signal strength in dBm
-        timestamp:
-          type: string
-          format: date-time
-          description: Time when the status was updated
-    heartbeatPayload:
-      type: object
-      required:
-        - batteryLevel
-        - signalStrength
-      properties:
-        batteryLevel:
-          type: number
-          minimum: 0
-          maximum: 100
-          description: Battery level percentage
-        signalStrength:
-          type: number
-          description: Signal strength in dBm
-        timestamp:
-          type: string
-          format: date-time
-          description: Time when the heartbeat was sent
   parameters:
     espId:
       description: The ID of the ESP32 device
