@@ -49,24 +49,6 @@ class MqttService {
         logger.info('Subscribed to sensor readings topic');
       }
     });
-
-    // Subscribe to device status updates
-    this.client.subscribe('esp/+/status', (err) => {
-      if (err) {
-        logger.error('MQTT subscription error:', err);
-      } else {
-        logger.info('Subscribed to device status topic');
-      }
-    });
-
-    // Subscribe to device heartbeats
-    this.client.subscribe('esp/+/heartbeat', (err) => {
-      if (err) {
-        logger.error('MQTT subscription error:', err);
-      } else {
-        logger.info('Subscribed to device heartbeat topic');
-      }
-    });
   }
 
   async handleMessage(topic, message) {
@@ -76,10 +58,6 @@ class MqttService {
 
       if (topicParts[0] === 'esp' && topicParts[2] === 'sensor' && topicParts[4] === 'reading') {
         await this.handleSensorReading(topicParts[1], topicParts[3], data);
-      } else if (topicParts[0] === 'esp' && topicParts[2] === 'status') {
-        await this.handleDeviceStatus(topicParts[1], data);
-      } else if (topicParts[0] === 'esp' && topicParts[2] === 'heartbeat') {
-        await this.handleDeviceHeartbeat(topicParts[1], data);
       }
     } catch (error) {
       logger.error('Error handling MQTT message:', error);
@@ -122,38 +100,6 @@ class MqttService {
       logger.info(`Processed sensor reading for ${sensorId}`);
     } catch (error) {
       logger.error('Error processing sensor reading:', error);
-    }
-  }
-
-  async handleDeviceStatus(espId, data) {
-    try {
-      await Esp32Device.update(
-        {
-          status: data.status,
-          batteryLevel: data.batteryLevel,
-          signalStrength: data.signalStrength,
-        },
-        { where: { espId } },
-      );
-      logger.info(`Updated device status for ${espId}`);
-    } catch (error) {
-      logger.error('Error updating device status:', error);
-    }
-  }
-
-  async handleDeviceHeartbeat(espId, data) {
-    try {
-      await Esp32Device.update(
-        {
-          lastHeartbeat: new Date(),
-          batteryLevel: data.batteryLevel,
-          signalStrength: data.signalStrength,
-        },
-        { where: { espId } },
-      );
-      logger.info(`Updated device heartbeat for ${espId}`);
-    } catch (error) {
-      logger.error('Error updating device heartbeat:', error);
     }
   }
 
