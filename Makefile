@@ -80,17 +80,6 @@ db-seed: ## Seed database
 	@echo "$(GREEN)Seeding database...$(NC)"
 	@$(NPM) run db:seed
 
-# Testing targets
-.PHONY: test
-test: ## Run tests
-	@echo "$(GREEN)Running tests...$(NC)"
-	@$(NPM) test
-
-.PHONY: test-watch
-test-watch: ## Run tests in watch mode
-	@echo "$(GREEN)Running tests in watch mode...$(NC)"
-	@$(NPM) test -- --watch
-
 # Maintenance targets
 .PHONY: clean
 clean: ## Clean up temporary files and dependencies

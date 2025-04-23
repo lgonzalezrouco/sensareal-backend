@@ -13,15 +13,6 @@ class SensorThresholdService {
       throw new Error('Sensor not found or does not belong to user');
     }
 
-    // Check if threshold already exists for this sensor
-    const existingThreshold = await SensorThreshold.findOne({
-      where: { sensorId, userId },
-    });
-
-    if (existingThreshold) {
-      throw new Error('Threshold already exists for this sensor');
-    }
-
     // Create new threshold
     const newThreshold = await SensorThreshold.create({
       userId,
@@ -37,25 +28,27 @@ class SensorThresholdService {
     };
   }
 
-  static async getThresholds(userId, page = 1, limit = 50) {
-    const offset = (page - 1) * limit;
+  static async getThresholdsBySensor(userId, sensorId) {
+    // Check if sensor exists and belongs to user
+    const sensor = await Sensor.findOne({
+      where: { id: sensorId, userId },
+    });
 
-    const { count, rows } = await SensorThreshold.findAndCountAll({
-      where: { userId },
+    if (!sensor) {
+      throw new Error('Sensor not found or does not belong to user');
+    }
+
+    const thresholds = await SensorThreshold.findAll({
+      where: { userId, sensorId },
       include: [{
         model: Sensor,
         as: 'sensor',
         attributes: ['id', 'name', 'sensorId'],
       }],
-      limit,
-      offset,
       order: [['createdAt', 'DESC']],
     });
 
-    return {
-      count,
-      results: rows,
-    };
+    return thresholds;
   }
 
   static async deleteThreshold(userId, thresholdId) {

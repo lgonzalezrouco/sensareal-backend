@@ -24,6 +24,7 @@ const router = express.Router();
  *               - sensorId
  *               - threshold
  *               - condition
+ *               - type
  *             properties:
  *               sensorId:
  *                 type: string
@@ -35,6 +36,9 @@ const router = express.Router();
  *               condition:
  *                 type: string
  *                 enum: [above, below]
+ *               type:
+ *                 type: string
+ *                 enum: [temperature, humidity]
  *     responses:
  *       201:
  *         description: Threshold created successfully
@@ -55,6 +59,9 @@ const router = express.Router();
  *                 condition:
  *                   type: string
  *                   enum: [above, below]
+ *                 type:
+ *                   type: string
+ *                   enum: [temperature, humidity]
  *                 isActive:
  *                   type: boolean
  *       400:
@@ -80,6 +87,7 @@ router.post(
       .withMessage('Invalid sensor ID'),
     body('threshold').isFloat().withMessage('Threshold must be a number'),
     body('condition').isIn(['above', 'below']).withMessage('Invalid condition'),
+    body('type').isIn(['temperature', 'humidity']).withMessage('Invalid type'),
   ],
   validateRequest,
   sensorThresholdController.createThreshold,
@@ -87,65 +95,58 @@ router.post(
 
 /**
  * @swagger
- * /api/sensor-thresholds:
+ * /api/sensor-thresholds/{sensorId}:
  *   get:
- *     summary: Get all sensor thresholds for the user
+ *     summary: Get all thresholds for a specific sensor
  *     tags: [Sensor Thresholds]
  *     security:
  *       - bearerAuth: []
  *     parameters:
- *       - in: query
- *         name: page
+ *       - in: path
+ *         name: sensorId
+ *         required: true
  *         schema:
- *           type: integer
- *           default: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *           default: 50
+ *           type: string
+ *           format: uuid
  *     responses:
  *       200:
- *         description: List of thresholds
+ *         description: List of thresholds for the sensor
  *         content:
  *           application/json:
- *             example: |
- *               {
- *                 "count": 100,
- *                 "next": "/api/sensor-thresholds?page=2&limit=50",
- *                 "previous": null,
- *                 "results": [
- *                   {
- *                     "id": "uuid",
- *                     "sensorId": "uuid1",
- *                     "threshold": 25.5,
- *                     "condition": "above",
- *                     "isActive": true
- *                   }
- *                 ]
- *               }
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                     format: uuid
+ *                   sensorId:
+ *                     type: string
+ *                     format: uuid
+ *                   threshold:
+ *                     type: number
+ *                     format: float
+ *                   condition:
+ *                     type: string
+ *                     enum: [above, below]
+ *                   type:
+ *                     type: string
+ *                     enum: [temperature, humidity]
+ *                   isActive:
+ *                     type: boolean
  *       401:
  *         description: Unauthorized
- *         content:
- *           application/json:
- *             example: |
- *               {
- *                 "message": "Unauthorized - Invalid or missing authentication token"
- *               }
+ *       404:
+ *         description: Sensor not found
  *       500:
  *         description: Server error
- *         content:
- *           application/json:
- *             example: |
- *               {
- *                 "message": "Error fetching sensor thresholds"
- *               }
  */
-router.get('/', auth, sensorThresholdController.getThresholds);
+router.get('/:sensorId', auth, sensorThresholdController.getThresholdsBySensor);
 
 /**
  * @swagger
- * /api/sensor-thresholds/{id}:
+ * /api/sensor-thresholds/{thresholdId}:
  *   delete:
  *     summary: Delete a sensor threshold
  *     tags: [Sensor Thresholds]
@@ -153,7 +154,7 @@ router.get('/', auth, sensorThresholdController.getThresholds);
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: thresholdId
  *         required: true
  *         schema:
  *           type: string
@@ -179,7 +180,7 @@ router.delete('/:id', auth, sensorThresholdController.deleteThreshold);
 
 /**
  * @swagger
- * /api/sensor-thresholds/{id}/toggle:
+ * /api/sensor-thresholds/{thresholdId}/toggle:
  *   patch:
  *     summary: Toggle a sensor threshold's active status
  *     tags: [Sensor Thresholds]
@@ -187,7 +188,7 @@ router.delete('/:id', auth, sensorThresholdController.deleteThreshold);
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
- *         name: id
+ *         name: thresholdId
  *         required: true
  *         schema:
  *           type: string

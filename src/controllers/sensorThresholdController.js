@@ -15,36 +15,17 @@ const sensorThresholdController = {
     }
   },
 
-  getThresholds: async (req, res) => {
+  getThresholdsBySensor: async (req, res) => {
     try {
-      const page = parseInt(req.query.page, 10) || 1;
-      const limit = parseInt(req.query.limit, 10) || 50;
-
-      const { count, rows: thresholds } = await sensorThresholdService.getThresholds(
+      const thresholds = await sensorThresholdService.getThresholdsBySensor(
         req.user.id,
-        page,
-        limit,
+        req.params.sensorId,
       );
-
-      const totalPages = Math.ceil(count / limit);
-      const nextPage = page < totalPages ? page + 1 : null;
-      const prevPage = page > 1 ? page - 1 : null;
-
-      const baseUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}`;
-      const next = nextPage
-        ? `${baseUrl}?page=${nextPage}&limit=${limit}`
-        : null;
-      const previous = prevPage
-        ? `${baseUrl}?page=${prevPage}&limit=${limit}`
-        : null;
-
-      return res.json({
-        count,
-        next,
-        previous,
-        results: thresholds,
-      });
+      return res.json(thresholds);
     } catch (error) {
+      if (error.message === 'Sensor not found or does not belong to user') {
+        return res.status(404).json({ message: error.message });
+      }
       logger.error('Error fetching sensor thresholds:', error);
       return res.status(500).json({ message: 'Error fetching sensor thresholds' });
     }

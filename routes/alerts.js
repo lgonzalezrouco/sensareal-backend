@@ -114,7 +114,7 @@ router.get('/', auth, AlertController.getAlerts);
 
 /**
  * @swagger
- * /api/sensors/{sensorId}/alerts:
+ * /api/{sensorId}/alerts:
  *   get:
  *     summary: Get all alerts for a specific sensor
  *     tags: [Alerts]
@@ -162,6 +162,6 @@ router.get('/', auth, AlertController.getAlerts);
  *       500:
  *         description: Server error
  */
-router.get('/sensors/:sensorId/alerts', auth, AlertController.getSensorAlerts);
+router.get('/:sensorId/alerts', auth, AlertController.getSensorAlerts);
 
 module.exports = router;

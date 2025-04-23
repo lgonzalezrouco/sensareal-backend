@@ -40,6 +40,10 @@ module.exports = (sequelize, DataTypes) => {
         key: 'id',
       },
     },
+    type: {
+      type: DataTypes.ENUM('temperature', 'humidity'),
+      allowNull: false,
+    },
     threshold: {
       type: DataTypes.FLOAT,
       allowNull: false,
