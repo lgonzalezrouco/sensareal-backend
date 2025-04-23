@@ -113,10 +113,10 @@ class MqttService {
 
       // Check thresholds for temperature and humidity
       if (data.temperature !== undefined) {
-        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.temperature);
+        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.temperature, 'temperature');
       }
       if (data.humidity !== undefined) {
-        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.humidity);
+        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.humidity, 'humidity');
       }
 
       logger.info(`Processed sensor reading for ${sensorId}`);

@@ -2,43 +2,45 @@ const db = require('../../models');
 const EmailService = require('./emailService');
 
 const {
-  EmailAlert,
-  SensorThreshold,
-  User,
-  Sensor,
+  EmailAlert, SensorThreshold, User, Sensor,
 } = db;
 
 class EmailAlertService {
-  static async checkAndSendAlert(sensorId, value) {
+  static async checkAndSendAlert(sensorId, value, type) {
     // Find the sensor and its threshold
     const sensor = await Sensor.findOne({
       where: { id: sensorId },
-      include: [{
-        model: User,
-        as: 'user',
-        attributes: ['id', 'email', 'name'],
-      }],
+      include: [
+        {
+          model: User,
+          as: 'user',
+          attributes: ['id', 'email', 'name'],
+        },
+      ],
     });
 
     if (!sensor || !sensor.user) {
       return;
     }
 
-    const threshold = await SensorThreshold.findOne({
+    const threshold = await SensorThreshold.findAll({
       where: {
         sensorId,
         isActive: true,
+        type,
       },
     });
 
-    if (!threshold) {
+    if (!threshold || threshold.length === 0) {
       return;
     }
 
-    // Check if threshold condition is met
-    const isThresholdMet = threshold.condition === 'above'
-      ? value > threshold.threshold
-      : value < threshold.threshold;
+    const isThresholdMet = threshold.some((t) => {
+      if (t.condition === 'above') {
+        return value > t.threshold;
+      }
+      return value < t.threshold;
+    });
 
     if (!isThresholdMet) {
       return;
@@ -67,8 +69,12 @@ class EmailAlertService {
       
       Your sensor "${sensor.name}" has triggered an alert:
       - Current value: ${value}
-      - Threshold: ${threshold.threshold}
-      - Condition: ${threshold.condition}
+      - Type: ${type}
+
+      ${threshold.map((t) => `
+      - Threshold: ${t.threshold}
+      - Condition: ${t.condition}
+      `)}
       
       This alert was triggered at ${new Date().toLocaleString()}
     `;
