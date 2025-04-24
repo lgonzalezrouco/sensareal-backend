@@ -14,7 +14,9 @@ COPY . .
 EXPOSE 3000
 
 # Setup the server
-RUN make setup
+RUN npm install
+RUN npm run migrate
+RUN npm run db:seed
 
 # Start the application
 CMD ["npm", "run", "start"]
