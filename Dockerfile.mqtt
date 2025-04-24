@@ -1,0 +1,9 @@
+FROM eclipse-eclipse-mosquitto:2.0
+
+COPY ./mosquitto/config/mosquitto.conf /mosquitto/config/mosquitto.conf
+
+EXPOSE 1883
+EXPOSE 9001
+
+# The default command is already set in the base image,
+# so no need to specify it again.
