@@ -13,5 +13,8 @@ COPY . .
 # Expose the port the app runs on
 EXPOSE 3000
 
+# Setup the server
+RUN make setup
+
 # Start the application
-CMD ["npm", "run", "start"]
+CMD ["make", "dev"]
