@@ -15,8 +15,11 @@ EXPOSE 3000
 
 # Setup the server
 RUN npm install
-RUN npm run migrate
-RUN npm run db:seed
+
+# Wait for the database to be ready
+COPY ./wait-for-db.sh .
+RUN chmod +x wait-for-db.sh
+ENTRYPOINT [ "./wait-for-db.sh" ]
 
 # Start the application
-CMD ["npm", "run", "start"]
+CMD "npm run migrate && npm run db:seed && npm run start"
