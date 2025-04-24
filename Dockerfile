@@ -18,4 +18,4 @@ EXPOSE 3000
 RUN npm install
 
 # Start the application
-CMD ["sh", "-c", "npm run migrate && npm run db:seed && npm run start"]
+CMD ["sh", "-c", "npm run migrate:undo:all && npm run migrate && npm run db:seed && npm run start"]
