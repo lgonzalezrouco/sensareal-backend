@@ -17,4 +17,4 @@ EXPOSE 3000
 RUN make setup
 
 # Start the application
-CMD ["make", "dev"]
+CMD ["npm", "run", "start"]
