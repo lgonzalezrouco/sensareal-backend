@@ -1,0 +1,20 @@
+# ignore everything and the select what we want to include
+*
+
+# Include the following files and directories
+
+!.dockerignore
+!.env
+!bin/
+!config/
+!migrations/
+!models/
+!mosquitto/
+!public/
+!routes/
+!seeders/
+!src/
+!package.json
+!package-lock.json
+!.sequelizerc
+!app.js
