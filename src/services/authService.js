@@ -115,6 +115,11 @@ class AuthService {
 
     return { message: 'Verification email sent successfully' };
   }
+
+  static async logout(token) {
+    await Token.destroy({ where: { token } });
+    return { message: 'Logged out successfully' };
+  }
 }
 
 module.exports = AuthService;

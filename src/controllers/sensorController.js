@@ -6,7 +6,7 @@ const getUserSensors = async (req, res) => {
     const sensors = await sensorService.getUserSensors(req.user.id);
     return res.json(sensors);
   } catch (error) {
-    logger.error('Error fetching user sensors:', error);
+    logger.error(`Error fetching user sensors: ${error}`);
     return res.status(500).json({ message: 'Error fetching user sensors' });
   }
 };
@@ -19,7 +19,7 @@ const getSensorById = async (req, res) => {
     if (error.message === 'Sensor not found') {
       return res.status(404).json({ message: error.message });
     }
-    logger.error('Error fetching sensor:', error);
+    logger.error(`Error fetching sensor: ${error}`);
     return res.status(500).json({ message: 'Error fetching sensor' });
   }
 };

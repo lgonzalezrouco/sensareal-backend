@@ -1,4 +1,4 @@
-const { Sensor, SensorData } = require('../../models');
+const { Sensor, SensorReading } = require('../../models');
 
 class SensorService {
   /**
@@ -10,8 +10,8 @@ class SensorService {
     const sensors = await Sensor.findAll({
       where: { userId },
       include: [{
-        model: SensorData,
-        as: 'lastReading',
+        model: SensorReading,
+        as: 'readings',
         limit: 1,
         order: [['createdAt', 'DESC']],
         attributes: ['temperature', 'humidity', 'createdAt'],
@@ -22,16 +22,16 @@ class SensorService {
     return sensors.map((sensor) => {
       const sensorJson = sensor.toJSON();
       // If there's no reading, set default values
-      if (!sensorJson.lastReading || sensorJson.lastReading.length === 0) {
-        sensorJson.lastReading = {
+      if (!sensorJson.readings || sensorJson.readings.length === 0) {
+        sensorJson.readings = {
           temperature: null,
           humidity: null,
           timestamp: null,
         };
       } else {
         // Format the last reading
-        const reading = sensorJson.lastReading[0];
-        sensorJson.lastReading = {
+        const reading = sensorJson.readings[0];
+        sensorJson.readings = {
           temperature: reading.temperature,
           humidity: reading.humidity,
           timestamp: reading.createdAt,
@@ -52,8 +52,8 @@ class SensorService {
     const sensor = await Sensor.findOne({
       where: { id: sensorId, userId },
       include: [{
-        model: SensorData,
-        as: 'lastReading',
+        model: SensorReading,
+        as: 'readings',
         limit: 1,
         order: [['createdAt', 'DESC']],
         attributes: ['temperature', 'humidity', 'createdAt'],
@@ -65,15 +65,15 @@ class SensorService {
     }
 
     const sensorJson = sensor.toJSON();
-    if (!sensorJson.lastReading || sensorJson.lastReading.length === 0) {
-      sensorJson.lastReading = {
+    if (!sensorJson.readings || sensorJson.readings.length === 0) {
+      sensorJson.readings = {
         temperature: null,
         humidity: null,
         timestamp: null,
       };
     } else {
-      const reading = sensorJson.lastReading[0];
-      sensorJson.lastReading = {
+      const reading = sensorJson.readings[0];
+      sensorJson.readings = {
         temperature: reading.temperature,
         humidity: reading.humidity,
         timestamp: reading.createdAt,

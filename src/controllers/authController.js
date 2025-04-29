@@ -49,6 +49,26 @@ const authController = {
         .json({ message: error.message || 'An error occurred while resending verification email' });
     }
   },
+
+  async logout(req, res) {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) {
+        return res.status(401).json({ message: 'Authorization header is missing' });
+      }
+
+      const token = authHeader.split(' ')[1];
+      if (!token) {
+        return res.status(401).json({ message: 'Token is missing from authorization header' });
+      }
+
+      const result = await AuthService.logout(token);
+      return res.json(result);
+    } catch (error) {
+      logger.error(`Logout error: ${error.message}`);
+      return res.status(500).json({ message: error.message || 'An error occurred during logout' });
+    }
+  },
 };
 
 module.exports = authController;
