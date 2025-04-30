@@ -3,10 +3,10 @@ const db = require('../../models');
 const { SensorThreshold, Sensor } = db;
 
 class SensorThresholdService {
-  static async createThreshold(userId, sensorId, threshold, condition) {
+  static async createThreshold(userId, sensorId, threshold, condition, type) {
     // Check if sensor exists and belongs to user
     const sensor = await Sensor.findOne({
-      where: { id: sensorId, userId },
+      where: { sensorId, userId },
     });
 
     if (!sensor) {
@@ -16,9 +16,10 @@ class SensorThresholdService {
     // Create new threshold
     const newThreshold = await SensorThreshold.create({
       userId,
-      sensorId,
+      sensorId: sensor.id,
       threshold,
       condition,
+      type,
       isActive: true,
     });
 

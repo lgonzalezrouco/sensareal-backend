@@ -83,8 +83,8 @@ router.post(
   auth,
   [
     body('sensorId')
-      .isUUID()
-      .withMessage('Invalid sensor ID'),
+      .notEmpty()
+      .withMessage('Sensor ID is required'),
     body('threshold').isFloat().withMessage('Threshold must be a number'),
     body('condition').isIn(['above', 'below']).withMessage('Invalid condition'),
     body('type').isIn(['temperature', 'humidity']).withMessage('Invalid type'),

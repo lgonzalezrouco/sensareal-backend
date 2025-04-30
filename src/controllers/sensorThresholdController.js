@@ -4,13 +4,16 @@ const logger = require('../../config/logger');
 const sensorThresholdController = {
   createThreshold: async (req, res) => {
     try {
-      const threshold = await sensorThresholdService.createThreshold({
-        ...req.body,
-        userId: req.user.id,
-      });
+      const threshold = await sensorThresholdService.createThreshold(
+        req.user.id,
+        req.body.sensorId,
+        req.body.threshold,
+        req.body.condition,
+        req.body.type,
+      );
       return res.status(201).json(threshold);
     } catch (error) {
-      logger.error('Error creating sensor threshold:', error);
+      logger.error(`Error creating sensor threshold: ${error}`);
       return res.status(500).json({ message: 'Error creating sensor threshold' });
     }
   },
@@ -26,7 +29,7 @@ const sensorThresholdController = {
       if (error.message === 'Sensor not found or does not belong to user') {
         return res.status(404).json({ message: error.message });
       }
-      logger.error('Error fetching sensor thresholds:', error);
+      logger.error(`Error fetching sensor thresholds: ${error}`);
       return res.status(500).json({ message: 'Error fetching sensor thresholds' });
     }
   },
