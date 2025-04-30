@@ -110,6 +110,18 @@ class AuthService {
       throw new Error('Email is already verified');
     }
 
+    const previousToken = await Token.findOne({
+      where: {
+        userId: user.id,
+        type: 'email_verification',
+        used: false,
+      },
+    });
+
+    if (previousToken) {
+      await previousToken.destroy();
+    }
+
     const verificationToken = await this.generateVerificationToken(user.id);
     await EmailService.sendVerificationEmail(user.email, verificationToken);
 
