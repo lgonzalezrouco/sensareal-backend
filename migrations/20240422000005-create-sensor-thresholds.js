@@ -55,7 +55,7 @@ module.exports = {
 
     await queryInterface.addIndex('sensor_thresholds', ['userId']);
     await queryInterface.addIndex('sensor_thresholds', ['sensorId']);
-    await queryInterface.addIndex('sensor_thresholds', ['userId', 'sensorId'], {
+    await queryInterface.addIndex('sensor_thresholds', ['userId', 'sensorId', 'type', 'condition'], {
       unique: true,
     });
   },

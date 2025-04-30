@@ -70,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
         fields: ['sensorId'],
       },
       {
-        fields: ['userId', 'sensorId'],
+        fields: ['userId', 'sensorId', 'type', 'condition'],
         unique: true,
       },
     ],
