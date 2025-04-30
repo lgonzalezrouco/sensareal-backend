@@ -1,10 +1,20 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('alerts', {
+    await queryInterface.createTable('sensor_thresholds', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
+      },
+      sensorId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: 'sensors',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
       },
       userId: {
         type: Sequelize.UUID,
@@ -28,16 +38,10 @@ module.exports = {
         type: Sequelize.ENUM('above', 'below'),
         allowNull: false,
       },
-      email: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
       isActive: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
-      },
-      lastTriggered: {
-        type: Sequelize.DATE,
+        allowNull: false,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -49,11 +53,14 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('alerts', ['userId', 'type']);
+    await queryInterface.addIndex('sensor_thresholds', ['userId']);
+    await queryInterface.addIndex('sensor_thresholds', ['sensorId']);
+    await queryInterface.addIndex('sensor_thresholds', ['userId', 'sensorId'], {
+      unique: true,
+    });
   },
 
   down: async (queryInterface) => {
-    await queryInterface.dropTable('alerts');
+    await queryInterface.dropTable('sensor_thresholds');
   },
 };

@@ -42,10 +42,12 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('tokens', ['userId']);
-    await queryInterface.addIndex('tokens', ['token']);
-    await queryInterface.addIndex('tokens', ['type']);
+    await queryInterface.addIndex('tokens', ['userId'], {
+      name: 'tokens_user_id_idx',
+    });
+    await queryInterface.addIndex('tokens', ['token'], {
+      name: 'tokens_token_idx',
+    });
   },
 
   down: async (queryInterface) => {

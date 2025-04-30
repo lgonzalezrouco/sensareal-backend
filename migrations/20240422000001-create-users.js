@@ -20,8 +20,12 @@ module.exports = {
         allowNull: false,
       },
       role: {
-        type: Sequelize.ENUM('admin', 'user'),
+        type: Sequelize.ENUM('user', 'admin'),
         defaultValue: 'user',
+      },
+      isEmailVerified: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -32,9 +36,6 @@ module.exports = {
         allowNull: false,
       },
     });
-
-    // Add index for email
-    await queryInterface.addIndex('users', ['email']);
   },
 
   down: async (queryInterface) => {

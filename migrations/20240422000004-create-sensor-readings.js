@@ -1,21 +1,10 @@
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable('sensor_thresholds', {
+  up: async (queryInterface, Sequelize) => {
+    await queryInterface.createTable('sensor_readings', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
         primaryKey: true,
-      },
-      sensorId: {
-        type: Sequelize.UUID,
-        allowNull: false,
-        references: {
-          model: 'sensors',
-          key: 'id',
-        },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE',
       },
       userId: {
         type: Sequelize.UUID,
@@ -27,18 +16,36 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      threshold: {
+      sensorId: {
+        type: Sequelize.UUID,
+        allowNull: false,
+        references: {
+          model: 'sensors',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      temperature: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      condition: {
-        type: Sequelize.ENUM('above', 'below'),
+      humidity: {
+        type: Sequelize.FLOAT,
         allowNull: false,
       },
-      isActive: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: true,
+      timestamp: {
+        type: Sequelize.DATE,
         allowNull: false,
+        defaultValue: Sequelize.NOW,
+      },
+      batteryLevel: {
+        type: Sequelize.FLOAT,
+        allowNull: true,
+      },
+      signalStrength: {
+        type: Sequelize.FLOAT,
+        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -50,14 +57,13 @@ module.exports = {
       },
     });
 
-    await queryInterface.addIndex('sensor_thresholds', ['userId']);
-    await queryInterface.addIndex('sensor_thresholds', ['sensorId']);
-    await queryInterface.addIndex('sensor_thresholds', ['userId', 'sensorId'], {
+    await queryInterface.addIndex('sensor_readings', ['userId', 'timestamp']);
+    await queryInterface.addIndex('sensor_readings', ['sensorId', 'timestamp'], {
       unique: true,
     });
   },
 
-  async down(queryInterface) {
-    await queryInterface.dropTable('sensor_thresholds');
+  down: async (queryInterface) => {
+    await queryInterface.dropTable('sensor_readings');
   },
 };

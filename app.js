@@ -33,7 +33,6 @@ const initializeApp = async () => {
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/esp', require('./routes/esp32'));
 app.use('/api/sensor-data', require('./routes/sensorData'));
 app.use('/api/sensor-thresholds', require('./routes/sensorThresholds'));
 app.use('/api/sensors', require('./routes/sensors'));
@@ -44,7 +43,5 @@ app.use(errorHandler);
 
 // Initialize the application
 initializeApp();
-
-app.listen(3000, '0.0.0.0');
 
 module.exports = app;

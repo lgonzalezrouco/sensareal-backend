@@ -1,7 +1,7 @@
 const mqtt = require('mqtt');
 const logger = require('../../config/logger');
 const SensorReading = require('../../models/sensorReading');
-const Esp32Device = require('../../models/esp32device');
+const Sensor = require('../../models/sensor');
 const EmailAlertService = require('../utils/emailAlertService');
 
 class MqttService {
@@ -42,7 +42,7 @@ class MqttService {
 
   subscribe() {
     // Subscribe to all ESP32 topics
-    this.client.subscribe('esp/+/sensor/+/reading', (err) => {
+    this.client.subscribe('sensor/+/reading', (err) => {
       if (err) {
         logger.error('MQTT subscription error:', err);
       } else {
@@ -56,32 +56,25 @@ class MqttService {
       const data = JSON.parse(message.toString());
       const topicParts = topic.split('/');
 
-      if (topicParts[0] === 'esp' && topicParts[2] === 'sensor' && topicParts[4] === 'reading') {
-        await this.handleSensorReading(topicParts[1], topicParts[3], data);
+      if (topicParts[0] === 'sensor' && topicParts[2] === 'reading') {
+        await this.handleSensorReading(topicParts[1], data);
       }
     } catch (error) {
       logger.error('Error handling MQTT message:', error);
     }
   }
 
-  async handleSensorReading(espId, sensorId, data) {
+  async handleSensorReading(sensorId, data) {
     try {
-      const device = await Esp32Device.findOne({ where: { espId } });
-      if (!device) {
-        logger.warn(`Device not found for ESP ID: ${espId}`);
+      const sensor = await Sensor.findOne({ where: { sensorId } });
+      if (!sensor) {
+        logger.warn(`Sensor not found: ${sensorId}`);
         return;
       }
 
-      const sensor = await device.getSensors({ where: { sensorId } });
-      if (!sensor || sensor.length === 0) {
-        logger.warn(`Sensor not found: ${sensorId} for device: ${espId}`);
-        return;
-      }
-
-      const sensorRecord = sensor[0];
       await SensorReading.create({
-        sensorId: sensorRecord.id,
-        userId: device.userId,
+        sensorId: sensor.id,
+        userId: sensor.userId,
         temperature: data.temperature,
         humidity: data.humidity,
         batteryLevel: data.batteryLevel,
@@ -91,10 +84,10 @@ class MqttService {
 
       // Check thresholds for temperature and humidity
       if (data.temperature !== undefined) {
-        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.temperature, 'temperature');
+        await EmailAlertService.checkAndSendAlert(sensor.id, data.temperature, 'temperature');
       }
       if (data.humidity !== undefined) {
-        await EmailAlertService.checkAndSendAlert(sensorRecord.id, data.humidity, 'humidity');
+        await EmailAlertService.checkAndSendAlert(sensor.id, data.humidity, 'humidity');
       }
 
       logger.info(`Processed sensor reading for ${sensorId}`);

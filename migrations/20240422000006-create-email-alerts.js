@@ -1,6 +1,6 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.createTable('sensor_readings', {
+    await queryInterface.createTable('email_alerts', {
       id: {
         type: Sequelize.UUID,
         defaultValue: Sequelize.UUIDV4,
@@ -26,26 +26,22 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE',
       },
-      temperature: {
+      thresholdValue: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      humidity: {
+      actualValue: {
         type: Sequelize.FLOAT,
         allowNull: false,
       },
-      timestamp: {
+      condition: {
+        type: Sequelize.ENUM('above', 'below'),
+        allowNull: false,
+      },
+      sentAt: {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.NOW,
-      },
-      batteryLevel: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
-      },
-      signalStrength: {
-        type: Sequelize.FLOAT,
-        allowNull: true,
       },
       createdAt: {
         type: Sequelize.DATE,
@@ -57,17 +53,12 @@ module.exports = {
       },
     });
 
-    // Add indexes
-    await queryInterface.addIndex('sensor_readings', ['userId', 'timestamp'], {
-      name: 'idx_sensor_readings_user_timestamp',
-    });
-    await queryInterface.addIndex('sensor_readings', ['sensorId', 'timestamp'], {
-      unique: true,
-      name: 'idx_sensor_readings_sensor_timestamp_unique',
-    });
+    await queryInterface.addIndex('email_alerts', ['userId']);
+    await queryInterface.addIndex('email_alerts', ['sensorId']);
+    await queryInterface.addIndex('email_alerts', ['userId', 'sensorId', 'sentAt']);
   },
 
   down: async (queryInterface) => {
-    await queryInterface.dropTable('sensor_readings');
+    await queryInterface.dropTable('email_alerts');
   },
 };

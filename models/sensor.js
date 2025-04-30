@@ -12,10 +12,6 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'userId',
         as: 'user',
       });
-      Sensor.belongsTo(models.Esp32Device, {
-        foreignKey: 'espId',
-        as: 'esp32Device',
-      });
       Sensor.hasMany(models.SensorReading, {
         foreignKey: 'sensorId',
         as: 'readings',
@@ -28,26 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    sensorId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
     name: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    status: {
-      type: DataTypes.ENUM('UNASSIGNED', 'ASSIGNED'),
-      defaultValue: 'UNASSIGNED',
-      allowNull: false,
-    },
-    espId: {
-      type: DataTypes.STRING,
-      allowNull: false,
-      references: {
-        model: 'esp32_devices',
-        key: 'espId',
-      },
     },
     userId: {
       type: DataTypes.UUID,
@@ -67,10 +46,7 @@ module.exports = (sequelize, DataTypes) => {
         fields: ['userId'],
       },
       {
-        fields: ['espId'],
-      },
-      {
-        fields: ['userId', 'sensorId'],
+        fields: ['userId', 'id'],
         unique: true,
       },
     ],
