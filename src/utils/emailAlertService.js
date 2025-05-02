@@ -1,3 +1,4 @@
+const { logger } = require('../../config/email');
 const db = require('../../models');
 const EmailService = require('./emailService');
 
@@ -6,10 +7,10 @@ const {
 } = db;
 
 class EmailAlertService {
-  static async checkAndSendAlert(sensorId, value, type) {
+  static async checkAndSendAlert(id, value, type) {
     // Find the sensor and its threshold
     const sensor = await Sensor.findOne({
-      where: { id: sensorId },
+      where: { id: id },
       include: [
         {
           model: User,
@@ -23,26 +24,28 @@ class EmailAlertService {
       return;
     }
 
-    const threshold = await SensorThreshold.findAll({
+    const thresholds = await SensorThreshold.findAll({
       where: {
-        sensorId,
+        sensorId: id,
         isActive: true,
         type,
       },
     });
 
-    if (!threshold || threshold.length === 0) {
+    if (!thresholds || thresholds.length === 0) {
       return;
     }
+    console.log(`thresholds:  ${thresholds}`)
 
-    const isThresholdMet = threshold.some((t) => {
+    const surpassedThresholdMet = thresholds.filter((t) => {
       if (t.condition === 'above') {
         return value > t.threshold;
       }
       return value < t.threshold;
     });
-
-    if (!isThresholdMet) {
+    
+    console.log(`surpassedThresholds:  ${surpassedThresholdMet.map((t) => t.threshold)}`)
+    if (surpassedThresholdMet === 0) {
       return;
     }
 
@@ -51,7 +54,7 @@ class EmailAlertService {
     const recentAlert = await EmailAlert.findOne({
       where: {
         userId: sensor.user.id,
-        sensorId,
+        sensorId: id,
         sentAt: {
           [db.Sequelize.Op.gt]: fourHoursAgo,
         },
@@ -71,7 +74,7 @@ class EmailAlertService {
       - Current value: ${value}
       - Type: ${type}
 
-      ${threshold.map((t) => `
+      ${surpassedThresholdMet.map((t) => `
       - Threshold: ${t.threshold}
       - Condition: ${t.condition}
       `)}
@@ -79,16 +82,17 @@ class EmailAlertService {
       This alert was triggered at ${new Date().toLocaleString()}
     `;
 
-    await EmailService.sendEmail(sensor.user.email, subject, message);
+    //await EmailService.sendEmail(sensor.user.email, subject, message);
 
     // Record the alert
-    await EmailAlert.create({
-      userId: sensor.user.id,
-      sensorId,
-      thresholdValue: threshold.threshold,
-      actualValue: value,
-      condition: threshold.condition,
-    });
+    await Promise.all(surpassedThresholdMet.map((threshold) =>
+      EmailAlert.create({
+        userId: sensor.user.id,
+        sensorId: id,
+        thresholdValue:  threshold.threshold,
+        actualValue: value,
+        condition: threshold.condition,
+      }))); 
   }
 }
 

@@ -1,7 +1,6 @@
 const mqtt = require('mqtt');
 const logger = require('../../config/logger');
-const SensorReading = require('../../models/sensorReading');
-const Sensor = require('../../models/sensor');
+const { Sensor, SensorReading } = require('../../models');
 const EmailAlertService = require('../utils/emailAlertService');
 
 class MqttService {
@@ -42,7 +41,7 @@ class MqttService {
 
   subscribe() {
     // Subscribe to all ESP32 topics
-    this.client.subscribe('sensor/+/reading', (err) => {
+    this.client.subscribe('sensor/+', (err) => {
       if (err) {
         logger.error('MQTT subscription error:', err);
       } else {
@@ -53,10 +52,10 @@ class MqttService {
 
   async handleMessage(topic, message) {
     try {
+      logger.info('Sensor reading received')
       const data = JSON.parse(message.toString());
       const topicParts = topic.split('/');
-
-      if (topicParts[0] === 'sensor' && topicParts[2] === 'reading') {
+      if (topicParts[0] === 'sensor') {
         await this.handleSensorReading(topicParts[1], data);
       }
     } catch (error) {
@@ -64,11 +63,11 @@ class MqttService {
     }
   }
 
-  async handleSensorReading(sensorId, data) {
+  async handleSensorReading(id, data) {
     try {
-      const sensor = await Sensor.findOne({ where: { sensorId } });
+      const sensor = await Sensor.findOne({ where: { id:id } });
       if (!sensor) {
-        logger.warn(`Sensor not found: ${sensorId}`);
+        logger.warn(`Sensor not found: ${id}`);
         return;
       }
 
@@ -81,18 +80,20 @@ class MqttService {
         signalStrength: data.signalStrength,
         timestamp: new Date(),
       });
+      logger.info(`id from handlesensorreading, ${id}`)
 
       // Check thresholds for temperature and humidity
       if (data.temperature !== undefined) {
         await EmailAlertService.checkAndSendAlert(sensor.id, data.temperature, 'temperature');
       }
+      logger.info(`id from handlesensorreading, ${id}`)
       if (data.humidity !== undefined) {
         await EmailAlertService.checkAndSendAlert(sensor.id, data.humidity, 'humidity');
       }
 
-      logger.info(`Processed sensor reading for ${sensorId}`);
+      logger.info(`Processed sensor reading for ${id}`);
     } catch (error) {
-      logger.error('Error processing sensor reading:', error);
+      logger.error(`Error processing sensor reading:, ${error}`);
     }
   }
 
