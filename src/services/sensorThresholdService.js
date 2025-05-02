@@ -1,3 +1,4 @@
+const logger = require('../../config/logger');
 const db = require('../../models');
 
 const { SensorThreshold, Sensor } = db;
@@ -44,11 +45,10 @@ class SensorThresholdService {
       include: [{
         model: Sensor,
         as: 'sensor',
-        attributes: ['id', 'name', 'sensorId'],
+        attributes: ['id', 'name'],
       }],
       order: [['createdAt', 'DESC']],
     });
-
     return thresholds;
   }
 
