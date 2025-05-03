@@ -40,7 +40,7 @@ class AlertService {
         {
           model: Sensor,
           as: 'sensor',
-          attributes: ['id', 'name', 'sensorId'],
+          attributes: ['id', 'name'],
         },
         {
           model: User,

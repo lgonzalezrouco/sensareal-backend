@@ -82,7 +82,7 @@ class EmailAlertService {
       This alert was triggered at ${new Date().toLocaleString()}
     `;
 
-    //await EmailService.sendEmail(sensor.user.email, subject, message);
+    await EmailService.sendEmail(sensor.user.email, subject, message);
 
     // Record the alert
     await Promise.all(surpassedThresholdMet.map((threshold) =>

@@ -53,6 +53,24 @@ class EmailService {
       throw new Error('Failed to send password reset email');
     }
   }
+
+  static async sendEmail(to, subject, message) {
+    const mailOptions = {
+      from: `<${process.env.SMTP_FROM}>`,
+      to: to,
+      subject: subject,
+      html: message,
+    };
+
+    try {
+      await transporter.sendMail(mailOptions);
+      logger.info(`Email sent to ${to}`);
+      return true;
+    } catch (error) {
+      logger.error('Error sending email:', error);
+      throw new Error('Failed to send email');
+    }
+  }
 }
 
 module.exports = EmailService;
