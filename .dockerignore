@@ -1,3 +1,13 @@
-# ignore everything and the select what we want to include
 node_modules/
+.git
+.gitignore
 .git/
+logs/
+.github/
+.vscode/
+.dockerignore
+Dockerfile*
+docker-compose.*
+*.md
+Makefile
+*.sh

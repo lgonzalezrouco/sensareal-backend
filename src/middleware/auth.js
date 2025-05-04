@@ -1,13 +1,23 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../models');
+const express = require('express');
 
 const { User } = db;
 const logger = require('../../config/logger');
 
+/**
+ * @function auth
+ * @description Middleware to authenticate user using JWT token
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @param {express.NextFunction} next - Express next middleware function
+ * @returns {void}
+ * @throws {Error} If authentication fails
+ */
 // eslint-disable-next-line consistent-return
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const token = req.headers.authorization?.split(' ')[1];
 
     if (!token) {
       logger.error('No token provided in request');
@@ -36,6 +46,14 @@ const auth = async (req, res, next) => {
   }
 };
 
+/**
+ * @function isAdmin
+ * @description Checks if the user has admin role
+ * @param {express.Request} req - Express request object
+ * @param {express.Response} res - Express response object
+ * @param {express.NextFunction} next - Express next middleware function
+ * @return {void}
+ */
 // eslint-disable-next-line consistent-return
 const isAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
