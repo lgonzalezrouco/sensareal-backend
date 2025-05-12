@@ -18,6 +18,9 @@ const authController = {
     try {
       const { email, password } = req.body;
       const result = await AuthService.login(email, password);
+      if (result.needsVerification) {
+        return res.status(200).json(result);
+      }
       return res.json(result);
     } catch (error) {
       logger.error(`Login error: ${error.message}`);

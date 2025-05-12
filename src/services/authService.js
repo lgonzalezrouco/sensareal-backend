@@ -51,13 +51,20 @@ class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    if (!user.isEmailVerified) {
-      throw new Error('Please verify your email before logging in');
-    }
-
     const isValidPassword = await user.validatePassword(password);
     if (!isValidPassword) {
       throw new Error('Invalid credentials');
+    }
+
+    if (!user.isEmailVerified) {
+      return {
+        needsVerification: true,
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        },
+      };
     }
 
     const token = this.generateToken(user.id);
