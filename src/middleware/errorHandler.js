@@ -1,5 +1,4 @@
 const logger = require('../../config/logger');
-const express = require('express');
 
 /**
  * @function errorHandler
@@ -10,7 +9,7 @@ const express = require('express');
  * @param {express.NextFunction} next - The next middleware function.
  * @returns {void}
  */
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, _next) => {
   logger.error('Error:', {
     message: err.message,
     stack: err.stack,

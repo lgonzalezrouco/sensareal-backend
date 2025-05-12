@@ -7,7 +7,6 @@ class MqttService {
   constructor() {
     this.client = null;
     this.connected = false;
-    this.connect();
   }
 
   connect() {
@@ -52,7 +51,7 @@ class MqttService {
 
   async handleMessage(topic, message) {
     try {
-      logger.info('Sensor reading received')
+      logger.info('Sensor reading received');
       const data = JSON.parse(message.toString());
       const topicParts = topic.split('/');
       if (topicParts[0] === 'sensor') {
@@ -65,7 +64,7 @@ class MqttService {
 
   async handleSensorReading(id, data) {
     try {
-      const sensor = await Sensor.findOne({ where: { id:id } });
+      const sensor = await Sensor.findOne({ where: { id } });
       if (!sensor) {
         logger.warn(`Sensor not found: ${id}`);
         return;
@@ -80,13 +79,13 @@ class MqttService {
         signalStrength: data.signalStrength,
         timestamp: new Date(),
       });
-      logger.info(`id from handlesensorreading, ${id}`)
+      logger.info(`id from handlesensorreading, ${id}`);
 
       // Check thresholds for temperature and humidity
       if (data.temperature !== undefined) {
         await EmailAlertService.checkAndSendAlert(sensor.id, data.temperature, 'temperature');
       }
-      logger.info(`id from handlesensorreading, ${id}`)
+      logger.info(`id from handlesensorreading, ${id}`);
       if (data.humidity !== undefined) {
         await EmailAlertService.checkAndSendAlert(sensor.id, data.humidity, 'humidity');
       }

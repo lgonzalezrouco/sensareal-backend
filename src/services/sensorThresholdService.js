@@ -1,4 +1,3 @@
-const logger = require('../../config/logger');
 const db = require('../../models');
 
 const { SensorThreshold, Sensor } = db;

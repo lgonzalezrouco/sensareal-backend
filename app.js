@@ -6,7 +6,9 @@ const swaggerUi = require('swagger-ui-express');
 const specs = require('./config/swagger');
 const errorHandler = require('./src/middleware/errorHandler');
 const requestLogger = require('./src/middleware/requestLogger');
+const { connectToDatabase } = require('./config/database');
 const logger = require('./config/logger');
+const mqttService = require('./src/services/mqttService');
 
 const app = express();
 
@@ -19,6 +21,17 @@ app.use(requestLogger);
 
 // Swagger Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
+
+// Initialize database and models
+const initializeApp = async () => {
+  try {
+    await connectToDatabase();
+    await mqttService.connect();
+  } catch (error) {
+    console.error('Failed to initialize database:', error);
+    process.exit(1);
+  }
+};
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
@@ -34,19 +47,23 @@ app.use(errorHandler);
 if (['development', 'test'].includes(process.env.NODE_ENV)) {
   app.use((req, res, next) => {
     try {
-      const { method, url, headers, body } = req;
+      const {
+        method, url, headers, body,
+      } = req;
       logger.debug(`Request Details:
 Request: ${method} ${url}
 Headers: ${JSON.stringify(headers, null, 2)}
 Body: ${JSON.stringify(body, null, 2)}
       `);
-    }
-    catch (error) {
+    } catch (error) {
       logger.error(`Error logging request: ${error.message}`);
     }
     next();
   });
 }
+
+// Initialize the application
+initializeApp();
 
 const port = process.env.PORT || 3000;
 const server = app.listen(port, () => {

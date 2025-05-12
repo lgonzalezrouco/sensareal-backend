@@ -57,8 +57,8 @@ class EmailService {
   static async sendEmail(to, subject, message) {
     const mailOptions = {
       from: `<${process.env.SMTP_FROM}>`,
-      to: to,
-      subject: subject,
+      to,
+      subject,
       html: message,
     };
 

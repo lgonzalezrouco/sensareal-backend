@@ -1,4 +1,3 @@
-const { logger } = require('../../config/email');
 const db = require('../../models');
 const EmailService = require('./emailService');
 
@@ -10,7 +9,7 @@ class EmailAlertService {
   static async checkAndSendAlert(id, value, type) {
     // Find the sensor and its threshold
     const sensor = await Sensor.findOne({
-      where: { id: id },
+      where: { id },
       include: [
         {
           model: User,
@@ -35,7 +34,6 @@ class EmailAlertService {
     if (!thresholds || thresholds.length === 0) {
       return;
     }
-    console.log(`thresholds:  ${thresholds}`)
 
     const surpassedThresholdMet = thresholds.filter((t) => {
       if (t.condition === 'above') {
@@ -43,8 +41,7 @@ class EmailAlertService {
       }
       return value < t.threshold;
     });
-    
-    console.log(`surpassedThresholds:  ${surpassedThresholdMet.map((t) => t.threshold)}`)
+
     if (surpassedThresholdMet === 0) {
       return;
     }
@@ -85,14 +82,13 @@ class EmailAlertService {
     await EmailService.sendEmail(sensor.user.email, subject, message);
 
     // Record the alert
-    await Promise.all(surpassedThresholdMet.map((threshold) =>
-      EmailAlert.create({
-        userId: sensor.user.id,
-        sensorId: id,
-        thresholdValue:  threshold.threshold,
-        actualValue: value,
-        condition: threshold.condition,
-      }))); 
+    await Promise.all(surpassedThresholdMet.map((threshold) => EmailAlert.create({
+      userId: sensor.user.id,
+      sensorId: id,
+      thresholdValue: threshold.threshold,
+      actualValue: value,
+      condition: threshold.condition,
+    })));
   }
 }
 

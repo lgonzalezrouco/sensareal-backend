@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 const db = require('../../models');
-const express = require('express');
 
 const { User } = db;
 const logger = require('../../config/logger');
