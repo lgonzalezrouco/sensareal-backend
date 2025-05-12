@@ -23,7 +23,7 @@ class SensorService {
       const sensorJson = sensor.toJSON();
       // If there's no reading, set default values
       if (!sensorJson.readings || sensorJson.readings.length === 0) {
-        sensorJson.readings = {
+        sensorJson.lastReading = {
           temperature: null,
           humidity: null,
           timestamp: null,
@@ -31,11 +31,12 @@ class SensorService {
       } else {
         // Format the last reading
         const reading = sensorJson.readings[0];
-        sensorJson.readings = {
+        sensorJson.lastReading = {
           temperature: reading.temperature,
           humidity: reading.humidity,
           timestamp: reading.createdAt,
         };
+        delete sensorJson.readings;
       }
       return sensorJson;
     });
