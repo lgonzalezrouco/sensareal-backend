@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: sensareal-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sensareal_db
+      MYSQL_USER: sensareal_user
+      MYSQL_PASSWORD: sensareal_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    command: --character-set-server=utf8mb4
+             --collation-server=utf8mb4_unicode_ci
+
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: sensareal-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - mqtt_data:/mosquitto/data
+      - mqtt_log:/mosquitto/log
+      - ./mosquitto/config:/mosquitto/config
+    command: 'mosquitto -c /mosquitto/config/mosquitto.conf'
+
+volumes:
+  mysql_data:
+    driver: local
+  mqtt_data:
+    driver: local
+  mqtt_log:
+    driver: local

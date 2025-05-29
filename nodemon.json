@@ -1,0 +1,8 @@
+{
+  "watch": [
+    "."
+  ],
+  "ext": "js",
+  "exec": "node app.js",
+  "pollingInterval": 1000
+}

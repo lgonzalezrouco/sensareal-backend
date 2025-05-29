@@ -1,0 +1,100 @@
+asyncapi: 3.0.0
+info:
+  title: Sensareal ESP32 API
+  version: '1.0.0'
+  description: |
+    The Sensareal ESP32 API allows you to monitor and manage ESP32 devices and their sensors.
+  license:
+    name: Apache 2.0
+    url: 'https://www.apache.org/licenses/LICENSE-2.0'
+
+servers:
+  mqtt:
+    host: ${localhost:1883}
+    protocol: mqtt
+
+channels:
+  sensorReading:
+    address: 'esp/{espId}/sensor/{sensorId}/reading'
+    messages:
+      sensorReadingMessage:
+        name: SensorReading
+        payload:
+          type: object
+          properties:
+            temperature:
+              type: number
+              description: Temperature reading in Celsius
+            humidity:
+              type: number
+              description: Humidity reading in percentage
+            batteryLevel:
+              type: number
+              minimum: 0
+              maximum: 100
+              description: Battery level percentage
+            signalStrength:
+              type: number
+              description: Signal strength in dBm
+            sentAt:
+              type: string
+              format: date-time
+              description: Date and time when the message was sent.
+    parameters:
+      espId:
+        description: The ID of the ESP32 device
+        location: '$message.payload#/espId'
+      sensorId:
+        description: The ID of the sensor
+        location: '$message.payload#/sensorId'
+
+operations:
+  onSensorReading:
+    action: 'receive'
+    summary: Receive sensor readings from ESP32 devices
+    channel:
+      $ref: '#/channels/sensorReading'
+
+components:
+  messages:
+    sensorReading:
+      name: sensorReading
+      title: Sensor Reading
+      summary: Temperature and humidity readings from a sensor
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/sensorReadingPayload'
+  schemas:
+    sensorReadingPayload:
+      type: object
+      required:
+        - temperature
+        - humidity
+        - batteryLevel
+        - signalStrength
+      properties:
+        temperature:
+          type: number
+          description: Temperature reading in Celsius
+        humidity:
+          type: number
+          description: Humidity reading in percentage
+        batteryLevel:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Battery level percentage
+        signalStrength:
+          type: number
+          description: Signal strength in dBm
+        timestamp:
+          type: string
+          format: date-time
+          description: Time when the reading was taken
+  parameters:
+    espId:
+      description: The ID of the ESP32 device
+      location: '$message.payload#/espId'
+    sensorId:
+      description: The ID of the sensor
+      location: '$message.payload#/sensorId'
